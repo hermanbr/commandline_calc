@@ -16,6 +16,7 @@
 
  #define ADD '+'
 #define SUB '-'
+#define POW '^'
 
 
 
@@ -27,7 +28,7 @@
 
 static int is_operator(char op){
     return (op == ADD
-    || op == SUB);
+    || op == SUB || op == POW);
 }
 
 int main(int argc, char **argv){
@@ -114,6 +115,9 @@ static int use_operator(int left_value, int right_value, char operator){
     switch(operator){
         case ADD: return left_value+right_value;
         case SUB: return left_value-right_value;
+
+        case POW: return (int)pow((double) left_value, (double) right_value);
+
     }
     return -1;
 }
