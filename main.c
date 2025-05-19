@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
- #include <stdlib.h>
+#include <stdlib.h>
+#include <math.h>
 
 
 
@@ -15,6 +16,7 @@
 
  #define ADD '+'
 #define SUB '-'
+
 
 
  static int use_operator(int left_value, int right_value, char operator);
