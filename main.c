@@ -14,52 +14,120 @@
  * How to see if legal input 
  */
 
- #define ADD '+'
+#define ADD '+'
 #define SUB '-'
 #define POW '^'
+#define MUL '*'
+#define DIV '/'
+
+#define LEFT_ASSOCIATIVE  0
+#define RIGHT_ASSOCIATIVE  1
+
+#define ADD_ASSOCIATIVE LEFT_ASSOCIATIVE
+#define MUL_ASSOCIATIVE LEFT_ASSOCIATIVE
+
+#define ADD_PRECEDENDCE 0
+#define MUL_PRECEDENCE 5
 
 
+
+
+
+// struct operand
+// {   char operand_type;
+//     int association;
+//     int precedence;
+//     /* data */
+// };
+
+
+// Use this;
+// static struct operand operators[5] = {
+//     {ADD, LEFT_ASSOCIATIVE, 0},
+//     {MUL, LEFT_ASSOCIATIVE, 5}
+// };
 
  static int use_operator(int left_value, int right_value, char operator);
 
- int operator_stack[10];
- int stack_index = 0;
+ 
+ 
 
+ static int get_priority(char op){
+    switch(op){
+        case ADD: return ADD_PRECEDENDCE;
+        case MUL: return MUL_PRECEDENCE;
+    }
+ }
+
+ static int get_association(char op){
+    switch(op){
+        case ADD: return LEFT_ASSOCIATIVE;
+        case MUL: return LEFT_ASSOCIATIVE;
+    }
+ }
 
 static int is_operator(char op){
-    return (op == ADD
-    || op == SUB || op == POW);
+    return (op == ADD  \
+    || op == SUB || op == POW || op == MUL);
+}
+
+
+void print_output(int index, char *output){
+    for(int i = 0; i < index; i++){
+        printf("queue: %c\n", output[i]);
+    }
 }
 
 int main(int argc, char **argv){
     int result;
     char *token;
-    char output[10];
+    char output[100];
+    char operator_stack[100];
+    int stack_index = 0;
     int output_index = 0;
-
+    
 
     if (argc < 1){
         printf("No arguments\n");
         return -1;
     }
 
+    /*
+           {
+            If ((token = left associative AND 
+                 precedence <= stack top element) OR
+            (token = right associative AND 
+                 precedence < stack top element))
+            {
+            Pop stack onto the output queue.  
+                Exit while loop.
+            }
+        }*/
 
     token = argv[1];
+    char *stack_top = operator_stack;
     while(*token != '/'){
+        printf("stack top: %c\n", *stack_top);
         if(isdigit((int)*token)){
-            printf("digit\n");
             output[output_index++] = *token;
         }
         else if(is_operator(*token)){
-                // If theres an operator on stack we must set it on the output queue, 
-                // can fix assosicate stuff later
-                printf("operator\n");
-                if(stack_index > 0){
+            while((stack_index > 0) && is_operator(*stack_top)){
+                if((get_association(*token) == LEFT_ASSOCIATIVE && (get_priority(*token) <= get_priority(*stack_top))) \
+                    || ((get_association(*token)==RIGHT_ASSOCIATIVE) &&  get_priority(*token) < get_priority(*stack_top))
+                ){
+                    printf("get here \n");
                     output[output_index++] = operator_stack[--stack_index];
-
+                    stack_top = &operator_stack[stack_index-1];
+                    continue;
                 }
-                operator_stack[stack_index++] = *token;
+                break;
+            }
+            
+            operator_stack[stack_index++] = *token;
+            stack_top = &operator_stack[stack_index-1];
         }
+
         token++; // Onto the next
     }
     // Pop stack onto queue
@@ -73,17 +141,24 @@ int main(int argc, char **argv){
     }
 
     // Now evaluate expression in Reverse Polish Notation
-    int output_stack[10];
-    int output_stack_index = 0;
-    int return_value;
-    for(int i = 0; i < output_index; i++){
+   
+
+     for(int i = 0; i < output_index; i++){
         char tok = output[i];
-        
+        printf("output queue 2 %c\n", tok);
+    }
+
+    int output_stack[100];
+    int output_stack_index = 0;
+    for(int i = 0; i < output_index; i++){
+
+        char tok = output[i];
+        printf("token = %c\n", tok);
         if(isdigit((unsigned char) tok)){ // Then push on output stack
             output_stack[output_stack_index] = tok - '0';
             output_stack_index++;
         }
-        else if (is_operator(tok)){ // If operand pop 2 of stack and evaluate
+        else if ((is_operator(tok))){ // If operand pop 2 of stack and evaluate
             int first, second, calc;
             output_stack_index--;
             second = output_stack[output_stack_index];
@@ -91,6 +166,8 @@ int main(int argc, char **argv){
             first = output_stack[output_stack_index];
 
             calc = use_operator(first, second, output[i]);
+            printf("calc %d\n", calc);
+
             output_stack[output_stack_index] = calc;
             output_stack_index++;
         }
@@ -110,14 +187,13 @@ int main(int argc, char **argv){
 
 
 static int use_operator(int left_value, int right_value, char operator){
-    printf("use_operator. Values: %d %d\n", right_value, left_value);
+    printf("Calculating.  %d %c %d\n", right_value, operator, left_value);
 
     switch(operator){
         case ADD: return left_value+right_value;
         case SUB: return left_value-right_value;
-
+        case MUL: return left_value*right_value;
         case POW: return (int)pow((double) left_value, (double) right_value);
-
     }
     return -1;
 }
