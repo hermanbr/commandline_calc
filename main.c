@@ -12,6 +12,7 @@
  * Implement a --help
  * Choice between int and float
  * How to see if legal input 
+ * 
  */
 
 #define ADD '+'
@@ -19,6 +20,8 @@
 #define POW '^'
 #define MUL '*'
 #define DIV '/'
+#define LEFT_BRACKET '('
+#define RIGHT_BRACKET ')'
 
 #define LEFT_ASSOCIATIVE  0
 #define RIGHT_ASSOCIATIVE  1
@@ -27,25 +30,17 @@
 #define MUL_ASSOCIATIVE LEFT_ASSOCIATIVE
 
 #define ADD_PRECEDENDCE 0
-#define MUL_PRECEDENCE 5
+#define SUB_PRECEDENCE 0
+#define MUL_PRECEDENCE 1
+#define DIV_PRECEDENCE 1
+#define POW_PRECEDENCE 2
+#define BRACKET_PRECEDENCE 3
 
 
 
 
 
-// struct operand
-// {   char operand_type;
-//     int association;
-//     int precedence;
-//     /* data */
-// };
 
-
-// Use this;
-// static struct operand operators[5] = {
-//     {ADD, LEFT_ASSOCIATIVE, 0},
-//     {MUL, LEFT_ASSOCIATIVE, 5}
-// };
 
  static int use_operator(int left_value, int right_value, char operator);
 
@@ -55,20 +50,25 @@
  static int get_priority(char op){
     switch(op){
         case ADD: return ADD_PRECEDENDCE;
+        case SUB: return SUB_PRECEDENCE;
         case MUL: return MUL_PRECEDENCE;
+        case DIV: return DIV_PRECEDENCE;
+        case POW: return POW_PRECEDENCE;
     }
  }
 
  static int get_association(char op){
     switch(op){
         case ADD: return LEFT_ASSOCIATIVE;
+        case DIV: return LEFT_ASSOCIATIVE;
         case MUL: return LEFT_ASSOCIATIVE;
+        case SUB: return LEFT_ASSOCIATIVE;
     }
  }
 
 static int is_operator(char op){
     return (op == ADD  \
-    || op == SUB || op == POW || op == MUL);
+    || op == SUB || op == POW || op == MUL || op == DIV);
 }
 
 
@@ -105,8 +105,10 @@ int main(int argc, char **argv){
         }*/
 
     token = argv[1];
+    int length = strlen(argv[1]);
     char *stack_top = operator_stack;
-    while(*token != '/'){
+    // while(*token != '/'){
+    for(int i = 0; i < length; i++){
         printf("stack top: %c\n", *stack_top);
         if(isdigit((int)*token)){
             output[output_index++] = *token;
@@ -174,11 +176,8 @@ int main(int argc, char **argv){
 
     }
 
-
     // At this point there should only be one value on the output stack. 
-    printf("Sum = %d\n", output_stack[0]);
-
-
+    printf("Sum = %d\n", output_stack[output_stack_index]);
     return 1;
 
 
@@ -187,13 +186,14 @@ int main(int argc, char **argv){
 
 
 static int use_operator(int left_value, int right_value, char operator){
-    printf("Calculating.  %d %c %d\n", right_value, operator, left_value);
+    printf("Calculating.  %d %c %d\n", left_value, operator, right_value);
 
     switch(operator){
         case ADD: return left_value+right_value;
         case SUB: return left_value-right_value;
         case MUL: return left_value*right_value;
         case POW: return (int)pow((double) left_value, (double) right_value);
+        case DIV: return left_value/right_value;
     }
     return -1;
 }
