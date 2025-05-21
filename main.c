@@ -84,7 +84,6 @@ int main(int argc, char **argv){
         }
     }
 
-    
     if(optind >= argc){
         fprintf(stderr, "Error: No expression given");
     }
