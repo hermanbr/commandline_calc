@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <unistd.h> 
 
 
 #include "main.h"
@@ -21,7 +22,7 @@
 
 
 struct type *tokenized_list;
- 
+int base = 10; // Default base 
  
 
  static int get_priority(char op){
@@ -62,24 +63,39 @@ void print_output(int index, char *output){
     }
 }
 
-int main(int argc, char **argv){
-    // int result;
-    // char *token;
-    // char output[100];
-    // char operator_stack[100];
-    // int stack_index = 0;
-    // int output_index = 0;
-    int num_tokens = 0;
-    int tokens_rpn; // Brackets are removed in RPN
 
-    if (argc < 1){
-        printf("No arguments\n");
-        return -1;
+static void help_page(char **argv){
+    printf("\n%s --- HELP PAGE ---\n", argv[0]);
+    printf("  -h / --help for help page\n");
+    printf("  -x for hexadecimal. Can be used with and without '0x'\n");
+    exit(EXIT_SUCCESS);
+}
+
+
+
+
+int main(int argc, char **argv){
+    
+    int opt;
+    while((opt = getopt(argc, argv, "hx") ) != -1){
+        switch (opt){
+            case 'h': help_page(argv);
+            case 'x': base = 16;
+        }
     }
 
-    tokenizer(argv[1], &num_tokens);
+    
+    if(optind >= argc){
+        fprintf(stderr, "Error: No expression given");
+    }
+    
+    int num_tokens = 0;
+    int tokens_rpn; // Brackets are removed in RPN
+    // Optind is first expression thats not a flag
+    tokenizer(argv[optind], &num_tokens);
+    
     struct type rpn_list[num_tokens]; 
-
+    
     make_RPN(rpn_list, num_tokens, &tokens_rpn);
 
 
@@ -114,12 +130,13 @@ static void tokenizer(char *argv, int *num_tokens){
 
     char *str = argv;
     char *end;
-    int base = 10;
+    //int base = 10;
     size_t n = 0;
     // Go through the string, tokenize using 
     while(*str){
         // If its a digit it may be using several digits, so we use strtol() to extract this. 
-        if(isdigit((unsigned char)*str)){
+        // isxdigit() works for both hex and not hex values, is the strtol that interprets it
+        if(isxdigit((unsigned char)*str)){
             long value = strtol(str, &end, base);
             struct type token;
             token.type = DIGIT;
