@@ -19,6 +19,9 @@
 #define POW_PRECEDENCE 2
 #define BRACKET_PRECEDENCE 3
 
+#define MAX_INPUT_LENGTH 100
+
+
 enum {
     DIGIT,
     OPERAND,
