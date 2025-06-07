@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <unistd.h> 
+#include <getopt.h>
 
 
 #include "main.h"
@@ -12,10 +13,11 @@
 
 
 /** TODO
- * Change tokeizer so it works with multi digit numbers
- * Implement a --help
+ * FLOATS
+ * SPACES
  * Choice between int and float
- * How to see if legal input 
+ * How to see if legal input, give feedback on whats illegal? For example: two operators after each other. 
+ * Implement -- ?
  * 
  */
 
@@ -33,6 +35,7 @@ int base = 10; // Default base
         case DIV: return DIV_PRECEDENCE;
         case POW: return POW_PRECEDENCE;
     }
+    return -1;
  }
 
  static int get_association(char op){
@@ -42,6 +45,7 @@ int base = 10; // Default base
         case MUL: return LEFT_ASSOCIATIVE;
         case SUB: return LEFT_ASSOCIATIVE;
     }
+    return -1;
  }
 
 static int is_operator(char op){
@@ -57,11 +61,7 @@ static int is_right_bracket(char op){
     return (op == RIGHT_BRACKET);
 }
 
-void print_output(int index, char *output){
-    for(int i = 0; i < index; i++){
-        printf("queue: %c\n", output[i]);
-    }
-}
+
 
 
 static void help_page(char **argv){
@@ -91,6 +91,12 @@ int main(int argc, char **argv){
     int num_tokens = 0;
     int tokens_rpn; // Brackets are removed in RPN
     // Optind is first expression thats not a flag
+
+    if(strlen(argv[optind]) > MAX_INPUT_LENGTH){
+        printf("Input is to long. Max length is %d characters\n", MAX_INPUT_LENGTH);
+        exit(EXIT_FAILURE);
+    }
+    
     tokenizer(argv[optind], &num_tokens);
     
     struct type rpn_list[num_tokens]; 
@@ -103,13 +109,12 @@ int main(int argc, char **argv){
 
     calculate_RPN(rpn_list, tokens_rpn);
 
+    return EXIT_SUCCESS;
+
 }
 
 
-
 static int use_operator(int left_value, int right_value, char operator){
-    printf("Calculating.  %d %c %d\n", left_value, operator, right_value);
-
     switch(operator){
         case ADD: return left_value+right_value;
         case SUB: return left_value-right_value;
@@ -123,13 +128,16 @@ static int use_operator(int left_value, int right_value, char operator){
 /**
  * TODO
  * Error checking
+ * Allowing spaces
  */
 static void tokenizer(char *argv, int *num_tokens){
     struct type tokenized_intermediate_list[strlen(argv)];
 
     char *str = argv;
     char *end;
-    //int base = 10;
+    int left_brackets = 0;
+    int right_brackets = 0;
+
     size_t n = 0;
     // Go through the string, tokenize using 
     while(*str){
@@ -149,16 +157,36 @@ static void tokenizer(char *argv, int *num_tokens){
             token.caracter = (unsigned char)*str;
             tokenized_intermediate_list[n++] = token;
             str++;
-        }
-        else if(is_left_bracket((unsigned char)*str) || is_right_bracket((unsigned char)*str)){
+        } // Handle case where its an inconsistant use of bracets
+        else if(is_left_bracket((unsigned char)*str)){
             struct type token;
             token.type = BRACKET;
             token.caracter = (unsigned char)*str;
             tokenized_intermediate_list[n++] = token;
             str++;
+            left_brackets++;
+        }
+        else if(is_right_bracket((unsigned char)*str)){
+            struct type token;
+            token.type = BRACKET;
+            token.caracter = (unsigned char)*str;
+            tokenized_intermediate_list[n++] = token;
+            str++;
+            right_brackets++;
+        }
+        else if(isspace((unsigned char)*str)){
+            str++;
+        }
+        else{
+            printf("Character not recognised: '%c' \n", (unsigned char)*str);
+            exit(EXIT_FAILURE);
         }
     }
 
+    if(left_brackets != right_brackets){
+        printf("Inconsistent use of brackets!\n");
+        exit(EXIT_FAILURE);
+    }
     tokenized_list = malloc(sizeof(struct type) * n);
     for(int i = 0; i < n; i++){
         tokenized_list[i] = tokenized_intermediate_list[i];
@@ -228,14 +256,7 @@ static void make_RPN(struct type *output_list, int num_tokens, int *tokens_rpn){
 
     *tokens_rpn = output_index;
 
-    for(int i = 0; i < output_index; i++){
-        if(output_list[i].type == DIGIT){
-            printf("output queue %d\n", output_list[i].val);
-        }
-        else{
-            printf("output queue %c\n", output_list[i].caracter);
-        }
-    }
+  
 
 }
 
@@ -267,8 +288,12 @@ static int calculate_RPN(struct type *list, int num_tokens){
         }
 
     }
-
-    printf("Sum = %d\n", output_stack[0].val);
+    if(base == 16){
+        printf("Sum = %#x\n", output_stack[0].val);    
+    }
+    else if(base == 10){
+        printf("Sum = %d\n", output_stack[0].val);
+    }
     return 1;
 
 
