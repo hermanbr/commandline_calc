@@ -73,7 +73,6 @@ static void help_page(char **argv){
 
 
 
-
 int main(int argc, char **argv){
     
     int opt;
@@ -85,14 +84,15 @@ int main(int argc, char **argv){
     }
 
     if(optind >= argc){
-        fprintf(stderr, "Error: No expression given");
+        fprintf(stderr, "Error: No expression given\n");
     }
     
     int num_tokens = 0;
     int tokens_rpn; // Brackets are removed in RPN
     // Optind is first expression thats not a flag
+    if(argv[optind] == NULL) return EXIT_FAILURE;
 
-    if(strlen(argv[optind]) > MAX_INPUT_LENGTH){
+    if(strnlen(argv[optind], MAX_INPUT_LENGTH) > MAX_INPUT_LENGTH){
         printf("Input is to long. Max length is %d characters\n", MAX_INPUT_LENGTH);
         exit(EXIT_FAILURE);
     }
@@ -131,7 +131,10 @@ static int use_operator(int left_value, int right_value, char operator){
  * Allowing spaces
  */
 static void tokenizer(char *argv, int *num_tokens){
-    struct type tokenized_intermediate_list[strlen(argv)];
+    
+    int amount_of_characters = strnlen(argv, MAX_INPUT_LENGTH);
+    if(amount_of_characters == 0) return;
+    struct type tokenized_intermediate_list[amount_of_characters];
 
     char *str = argv;
     char *end;
