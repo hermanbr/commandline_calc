@@ -30,8 +30,8 @@ enum {
 
 struct type {
     char type;   // ADD, SUB etc.
-    int val;     // Actual value
     char caracter; // Used if not digit
+    int val;     // Actual value
 };
 
 /* Methods used for setting up the Reverse Polish Notation*/

@@ -65,9 +65,10 @@ static int is_right_bracket(char op){
 
 
 static void help_page(char **argv){
-    printf("\n%s --- HELP PAGE ---\n", argv[0]);
+    printf("  %s  --- HELP PAGE ---\n", argv[0]);
     printf("  -h / --help for help page\n");
     printf("  -x for hexadecimal. Can be used with and without '0x'\n");
+    printf("\n The shell might interpret * as a wildcard and ( ) as something strange.\n  Use ' ' around the expression to fix\n");
     exit(EXIT_SUCCESS);
 }
 
@@ -80,6 +81,8 @@ int main(int argc, char **argv){
         switch (opt){
             case 'h': help_page(argv);
             case 'x': base = 16;
+            default: // Start actual program
+                break;
         }
     }
 
@@ -292,10 +295,12 @@ static int calculate_RPN(struct type *list, int num_tokens){
 
     }
     if(base == 16){
-        printf("Sum = %#x\n", output_stack[0].val);    
+        // printf("Sum = %#x\n", output_stack[0].val);    
+        printf("%#x\n", output_stack[0].val);    
     }
     else if(base == 10){
-        printf("Sum = %d\n", output_stack[0].val);
+        // printf("Sum = %d\n", output_stack[0].val);
+        printf("%d\n", output_stack[0].val);
     }
     return 1;
 
