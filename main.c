@@ -226,12 +226,18 @@ static void make_RPN(struct type *output_list, int num_tokens, int *tokens_rpn){
                         && get_priority(token.caracter) < get_priority(stack_top->caracter)))
                         {
                             output_list[output_index++] = operator_stack[--operator_stack_index];
-                            stack_top = &operator_stack[operator_stack_index-1];
-                            continue;
+                            if(operator_stack_index > 0){ // 
+                                stack_top = &operator_stack[operator_stack_index-1];
+                            }
+                            else{
+                                printf("reach\n");
+                                stack_top = &operator_stack[operator_stack_index];
+                            }
+                            continue; 
                         }
                         break;
                 }
-
+                
                 operator_stack[operator_stack_index++] = token;
                 stack_top = &operator_stack[operator_stack_index-1];
             }
